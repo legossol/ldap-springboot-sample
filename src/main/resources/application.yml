@@ -1,0 +1,72 @@
+spring:
+  ldap:
+    urls: ldap://localhost:389
+    base: dc=auth,dc=legossol,dc=com
+    username: cn=admin,dc=auth,dc=legossol,dc=com
+    password: admin
+  application:
+    name: ldap
+  main:
+    banner-mode: colsole
+  devtools:
+    livereload:
+      enabled: true
+  data:
+    web:
+      pageable:
+        default-page-size: 10
+  servlet:
+    multipart:
+      enabled: true
+      max-request-size: 200MB
+      max-file-size: 200MB
+  output:
+    ansi:
+      enabled: always
+  jackson:
+    serialization:
+      fail-on-empty-beans: false
+      write_dates_as_timestamps: false
+  task:
+    scheduling:
+      pool:
+        size: 1
+  gson:
+    data-time-format:
+      serialize: "yyyy-MM-dd HH:mm:ss"
+      deserialize: "yyyy-MM-dd HH:mm:ss"
+server:
+  port: 9001
+  http2:
+    enabled: true
+  undertow:
+    buffer-size: 16000
+    direct-buffers: true
+    max-http-post-size: -1B
+    accesslog:
+      enabled: true
+      encoding:
+        chaset: UTF-8
+        enabled: true
+        force: true
+        force-response: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+hibernate:
+  dialect:
+    storage_engine: innodb
+logging:
+  level:
+    root: info
+    kr.legossol.ldap: debug
+#cache:
+#  host: http://
+#  enable: true
+#  cache-property-map:
+#    sample:
+#      time-to-live:
+#        unit: minutes
+#        time: 10
