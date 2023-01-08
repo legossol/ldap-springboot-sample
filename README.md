@@ -48,7 +48,8 @@ $sudo /usr/libexec/slapd -h ldap://localhost -d 50
  확인 : 디렉토리에 DB관련 파일이 생성된다.
 위치 : cd /private/var/db/openldap/ssolldap.com
 
-![스크린샷 2022-12-07 오후 4.03.56.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/9648771c-bf52-44e1-854d-9940b7720fce/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2022-12-07_%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE_4.03.56.png)
+<img width="336" alt="Screenshot 2023-01-08 at 8 36 24 PM" src="https://user-images.githubusercontent.com/75191069/211194014-cf600f33-12f3-4057-baf0-2ffceaf683c3.png">
+
 
 ldap은 정상적으로 띄어졌지만 최상위 DN이 생성되야 한다 - 이게 무슨말일까
 
