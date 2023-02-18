@@ -25,6 +25,11 @@ dependencies {
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	implementation 'org.hibernate:hibernate-hikaricp'
+	implementation 'com.zaxxer:HikariCP'
+
+	runtimeOnly 'mysql:mysql-connector-java'
+
 }
 
 tasks.named('test') {

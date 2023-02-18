@@ -79,21 +79,16 @@ sudo ldapadd -x -D "cn=Manager,dc=ssolldap,dc=com" -W -f create-suffix-dn.ldif
 ldapadd -x -D "cn=admin,dc=mycompany,dc=com" -w admin -H ldap://$LDAP_HOST -f ldap/ldap-mycompany-com.ldif
 ```
 
-![스크린샷 2022-12-07 오후 4.13.22.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/b152c312-d8f5-4d08-9009-22aaaff1fe7f/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2022-12-07_%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE_4.13.22.png)
 
 $ sh cn_apply.sh
 
 상위에서 설정한 ldap 비밀번호(String)을 입력하면 아래와같이 뭐가 입력되며
 
-![스크린샷 2022-12-07 오후 4.20.30.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/533117db-e894-44bf-8475-842e71f3dcad/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2022-12-07_%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE_4.20.30.png)
 
 아까 구동시킨 ldap서버 로그에 아래와같이 뜬다.
 
-![스크린샷 2022-12-07 오후 4.17.17.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/96d0d687-16fa-4939-be4c-43b0779e2ff7/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2022-12-07_%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE_4.17.17.png)
-
 확인 : $ ldapsearch -x -b dc=ssolldap,dc=com
 
-![스크린샷 2022-12-07 오후 4.21.38.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/79461210-9f50-4aae-ad94-cfddefa4e148/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2022-12-07_%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE_4.21.38.png)
 
 FROM NOW ON, 부서 생성요청 or 계정 생성 요청시 어떻게 처리하는지 확인(UI 사용 - apache-directory-studio) : 그냥 콘솔로도 가능(힘듦)
 

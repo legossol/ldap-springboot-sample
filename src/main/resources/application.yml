@@ -1,8 +1,23 @@
 spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/organization?useSSL=false&autoReconnect=true
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 5
+  ## local-docker-boot-openldap
+#  ldap:
+#    urls: ldap://localhost:389
+#    base: dc=auth,dc=legossol,dc=com
+#    username: cn=admin,dc=auth,dc=legossol,dc=com
+#    password: admin
+  ## local-boot-openldap
   ldap:
     urls: ldap://localhost:389
-    base: dc=auth,dc=legossol,dc=com
-    username: cn=admin,dc=auth,dc=legossol,dc=com
+    base: dc=auth,dc=parkingcloud,dc=com
+    username: cn=admin,dc=auth,dc=parkingcloud,dc=com
     password: admin
   application:
     name: ldap
