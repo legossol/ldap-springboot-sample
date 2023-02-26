@@ -3,15 +3,20 @@ package kr.legossol.ldap.api.organization.domain.service.impl;
 import com.google.gson.Gson;
 import kr.legossol.ldap.api.organization.domain.dto.DepartmentRequestV1;
 import kr.legossol.ldap.api.organization.domain.dto.GroupDepartmentDto;
+import kr.legossol.ldap.api.organization.domain.dto.MoveDepartmentDto;
 import kr.legossol.ldap.api.organization.domain.dto.response.DepartmentResponseV1;
 import kr.legossol.ldap.api.organization.domain.dto.response.GroupResponseDto;
 import kr.legossol.ldap.api.organization.domain.entity.DepartmentBasicInfo;
 import kr.legossol.ldap.api.organization.domain.service.GroupService;
 import kr.legossol.ldap.api.organization.exception.MultiDepartmentExistException;
+import kr.legossol.ldap.api.organization.properties.LdapProperties;
+import kr.legossol.ldap.api.user.domain.entity.Account;
 import kr.legossol.ldap.code.AttributeClassCode;
 import kr.legossol.ldap.code.ObjectClassCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.ldap.core.ContextMapper;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.ldap.core.LdapTemplate;
@@ -22,10 +27,14 @@ import org.springframework.ldap.support.LdapNameBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import javax.naming.Name;
 import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.ModificationItem;
+import javax.naming.directory.SearchControls;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,8 +42,39 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@EnableConfigurationProperties(LdapProperties.class)
 public class GroupServiceImpl implements GroupService {
+
     private final LdapTemplate ldapTemplate;
+    private final LdapProperties ldapProperties;
+
+    private final ContextMapper<Name> groupAttrModifyMapper = new AbstractContextMapper<Name>() {
+        @Override
+        protected Name doMapFromContext(DirContextOperations ctx) {
+            List<String> memberAttrList = Arrays.stream(
+                    ctx.getStringAttributes(AttributeClassCode.MEMBER.getName())).collect(Collectors.toList());
+            List<ModificationItem> toBeAttributes = new LinkedList<>();
+
+            ldapTemplate.modifyAttributes(ctx.getDn(), new ModificationItem[]{new ModificationItem(
+                    DirContextAdapter.REMOVE_ATTRIBUTE, ctx.getAttributes().get(AttributeClassCode.MEMBER.getName())
+            )});
+            memberAttrList.forEach(value ->{
+                if(StringUtils.startsWithIgnoreCase(value,"uid")){
+                    toBeAttributes.add(new ModificationItem(DirContextAdapter.ADD_ATTRIBUTE,
+                            new BasicAttribute(AttributeClassCode.MEMBER.getName(), value)));
+                    return;
+                }
+                toBeAttributes.add(new ModificationItem(DirContextAdapter.ADD_ATTRIBUTE,
+                        new BasicAttribute(AttributeClassCode.MEMBER.getName(),
+                                value.split(",")[0] + "," + ctx.getDn().toString() + "," + ldapProperties.getBase())));
+            });
+            toBeAttributes.add(new ModificationItem(DirContextAdapter.REPLACE_ATTRIBUTE,
+                    new BasicAttribute(AttributeClassCode.DEPTH_CODE.getName(),
+                            String.valueOf(Arrays.asList(ctx.getDn().toString().split(",")).size() - 1))));
+            ldapTemplate.modifyAttributes(ctx.getDn(), toBeAttributes.toArray(toBeAttributes.toArray(new ModificationItem[toBeAttributes.size()])));
+            return ctx.getDn();
+        }
+    };
 
 
     @Override
@@ -103,7 +143,7 @@ public class GroupServiceImpl implements GroupService {
 
     private boolean isExistDepartment(String groupName) {
         Gson gson = new Gson();
-        LdapQuery query = LdapQueryBuilder.query().base()
+        LdapQuery query = LdapQueryBuilder.query()
                 .where(ObjectClassCode.OBJECT_CLASS.getName()).is(ObjectClassCode.POSIX_GROUP.getName())
                 .and(ObjectClassCode.ORGANIZAIONAL_UNIT.getName()).like("*"+groupName+"*");
         List<DepartmentBasicInfo> groupList = ldapTemplate.search(query, new AbstractContextMapper<DepartmentBasicInfo>() {
@@ -150,4 +190,30 @@ public class GroupServiceImpl implements GroupService {
                 .add(sb.append("cn=").append(departmentName).append(groupBase).toString())
                 .build();
     }
+    @Override
+    public void moveDepartment(MoveDepartmentDto moveDepartmentDto) {
+        LdapQuery query;
+        query = LdapQueryBuilder.query()
+                .where(ObjectClassCode.OBJECT_CLASS.getName()).is(ObjectClassCode.POSIX_GROUP.getName())
+                .and(AttributeClassCode.CN.getName()).is(moveDepartmentDto.getName());
+        //대상 부서 DirContext
+        Name targetDn = ldapTemplate.searchForContext(query).getDn();
+        log.info("search ::::{}",targetDn);
+        //옮겨질 부모 DirContext
+        LdapQuery parentQuery;
+        parentQuery = LdapQueryBuilder.query()
+                .where(ObjectClassCode.OBJECT_CLASS.getName()).is(ObjectClassCode.POSIX_GROUP.getName())
+                .and(AttributeClassCode.CN.getName()).is(moveDepartmentDto.getParentName());
+        Name parentDn = ldapTemplate.searchForContext(parentQuery).getDn();
+        Name toBeLodationDn = toName(moveDepartmentDto.getName(), parentDn.toString());
+
+        log.info("toBeLodationDn::{}",toBeLodationDn);
+        ldapTemplate.rename(targetDn, toBeLodationDn);
+
+        //하나일경우 modify  여러개일경우 다 지우고 add
+        List<Name> search = ldapTemplate.search(toBeLodationDn.toString(), "(&(objectclass=posixGroup))", SearchControls.SUBTREE_SCOPE, groupAttrModifyMapper);
+        
+        log.info("subtree search:::::{}",search);
+    }
+
 }

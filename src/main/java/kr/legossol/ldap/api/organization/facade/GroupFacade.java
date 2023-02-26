@@ -2,6 +2,7 @@ package kr.legossol.ldap.api.organization.facade;
 
 import kr.legossol.ldap.api.organization.domain.dto.DepartmentRequestV1;
 import kr.legossol.ldap.api.organization.domain.dto.GroupDepartmentDto;
+import kr.legossol.ldap.api.organization.domain.dto.MoveDepartmentDto;
 import kr.legossol.ldap.api.organization.domain.dto.response.DepartmentResponseV1;
 import kr.legossol.ldap.api.organization.domain.dto.response.GroupResponseDto;
 import kr.legossol.ldap.api.organization.domain.service.GroupService;
@@ -21,5 +22,9 @@ public class GroupFacade {
 
     public DepartmentResponseV1 createDepartment(DepartmentRequestV1 departmentRequestV1) {
          groupService.create(departmentRequestV1);
+    }
+
+    public void moveDepartment(MoveDepartmentDto moveDepartmentDto) {
+        groupService.moveDepartment(moveDepartmentDto);
     }
 }
